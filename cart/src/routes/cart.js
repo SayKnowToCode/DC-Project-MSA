@@ -3,9 +3,9 @@ const router = express.Router();
 const {
     addToCart,
     getCartItems,
-    removeFromCart,
-    createCart
+    removeFromCart
 } = require('../controllers/cartController');
+const { createCart } = require('../controllers/cartInit');
 
 router.post('/', addToCart);
 router.get('/', getCartItems);
