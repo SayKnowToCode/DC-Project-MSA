@@ -16,27 +16,12 @@ spec:
     spec:
       containers:
         - name: inventory-service
-          image: inventory-ecomm:latest
+          image: mahmayur06/inventory-service:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8001
-          env:
-            - name: DB_HOST
-              valueFrom:
-                configMapKeyRef:
-                  name: inventory-config
-                  key: DB_HOST
-            - name: DB_USER
-              valueFrom:
-                configMapKeyRef:
-                  name: inventory-config
-                  key: DB_USER
-            - name: DB_NAME
-              valueFrom:
-                configMapKeyRef:
-                  name: inventory-config
-                  key: DB_NAME
-            - name: DB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: inventory-db-secret
-                  key: DB_PASSWORD
+          envFrom:
+            - configMapRef:
+                name: inventory-config
+            - secretRef:
+                name: global-db-secret

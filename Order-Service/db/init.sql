@@ -1,14 +1,10 @@
--- Create database if not exists
-CREATE DATABASE IF NOT EXISTS ecommerce_db;
-
--- Use the database
-USE ecommerce_db;
+CREATE DATABASE IF NOT EXISTS order_db;
+USE order_db;
 
 -- Orders table
 CREATE TABLE IF NOT EXISTS orders (
     order_id INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(50) NOT NULL,
-    total_amount DECIMAL(10, 2) NOT NULL,
+    username VARCHAR(50) NOT NULL
 );
 
 -- Ordered products table

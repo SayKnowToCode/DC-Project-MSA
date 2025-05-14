@@ -1,13 +1,12 @@
 -- Create database if not exists
-CREATE DATABASE IF NOT EXISTS ecommerce_db;
-USE ecommerce_db;
+CREATE DATABASE IF NOT EXISTS inventory;
+USE inventory;
 
 -- Products table (Inventory)
 CREATE TABLE IF NOT EXISTS products (
     product_id INT PRIMARY KEY,
     product_name VARCHAR(100),
     product_description TEXT,
-    price DECIMAL(10, 2),
     quantity INT
 );
 
