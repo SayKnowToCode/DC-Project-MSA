@@ -6,10 +6,10 @@ metadata:
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   rules:
-    - host: order.local
+    - host: dc-project.com
       http:
         paths:
-          - path: /
+          - path: /inventory
             pathType: Prefix
             backend:
               service:

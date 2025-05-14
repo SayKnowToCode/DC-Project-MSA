@@ -16,27 +16,12 @@ spec:
     spec:
       containers:
         - name: order-service
-          image: order-ecomm:latest
+          image: mahmayur06/order-service:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8000
-          env:
-            - name: DB_HOST
-              valueFrom:
-                configMapKeyRef:
-                  name: order-config
-                  key: DB_HOST
-            - name: DB_USER
-              valueFrom:
-                configMapKeyRef:
-                  name: order-config
-                  key: DB_USER
-            - name: DB_NAME
-              valueFrom:
-                configMapKeyRef:
-                  name: order-config
-                  key: DB_NAME
-            - name: DB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: order-db-secret
-                  key: DB_PASSWORD
+          envFrom:
+            - configMapRef:
+                name: order-config
+            - secretRef:
+                name: global-db-secret

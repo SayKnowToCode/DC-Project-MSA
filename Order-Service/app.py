@@ -3,15 +3,18 @@ from pydantic import BaseModel
 from typing import List
 import mysql.connector
 import requests
+import os
 
 app = FastAPI()
 
 db = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    password="password",
-    database="ecommerce_db"
+    host=os.environ["MYSQL_HOST"],
+    user=os.environ["MYSQL_USER"],
+    password=os.environ["MYSQL_PASSWORD"],
+    database=os.environ["MYSQL_DB"],
+    port=int(os.environ["MYSQL_PORT"]),
 )
+
 
 # Request models
 class ProductItem(BaseModel):
@@ -31,36 +34,31 @@ async def place_order(order_request: OrderRequest):
     cursor = db.cursor()
     print("Received order request:", order_request)
 
-    total_amount = 0
-    for item in order_request.cart:
-        try:
-            # Make a request to the Inventory service
-            response = requests.get(f"http://localhost:8001/validate/{item.product_id}/{item.quantity}")
-            print("Inventory service response:", response.json())
-
-            
-            if response.status_code != 200:
-                print(f"Product {item.product_id} is out of stock.")
-                raise HTTPException(status_code=400, detail=f"Product {item.product_id} out of stock.")
-
-            response_data = response.json()
-            total_amount += response_data['price'] * item.quantity
-            print(f"Product {item.product_id} validated successfully. Total amount so far: {total_amount}")
-        except Exception as e:
-            print("Error while connecting to Inventory service:", str(e))
-            raise HTTPException(status_code=500, detail=f"Failed to validate inventory: {str(e)}")
-
-
-    order_id = next_order_id(cursor)
-
     try:
-        cursor.execute("INSERT INTO orders (username) VALUES (%s, %s)", (order_request.username,total_amount,))
-    
+        total_amount = 0
+        validated_items = []
 
         for item in order_request.cart:
+            response = requests.get(f"http://dc-project.com/inventory/validate/{item.product_id}/{item.quantity}")
+            print("Inventory service response:", response.json())
+
+            if response.status_code != 200:
+                print(f"Product {item.product_id} is out of stock.")
+                return {"message": f"Product {item.product_id} out of stock."}
+
+            response_data = response.json()
+            validated_items.append((item.product_id, item.quantity, response_data['price']))
+            total_amount += response_data['price'] * item.quantity
+            print(f"Product {item.product_id} validated successfully. Total amount so far: {total_amount}")
+
+        order_id = next_order_id(cursor)
+
+        cursor.execute("START TRANSACTION")
+        cursor.execute("INSERT INTO orders (username, total_amount) VALUES (%s, %s)", (order_request.username, total_amount))
+
+        for product_id, quantity, price in validated_items:
             cursor.execute("INSERT INTO ordered_products (order_id, product_id, quantity) VALUES (%s, %s, %s)", 
-                           (order_id, item.product_id, item.quantity))
-        
+                           (order_id, product_id, quantity))
 
         db.commit()
         print("Order placed successfully")
@@ -73,6 +71,24 @@ async def place_order(order_request: OrderRequest):
 
     finally:
         cursor.close()
+
+@app.get("/orders/{username}")
+async def get_orders(username: str):
+    cursor = db.cursor(dictionary=True)
+    try:
+        cursor.execute("SELECT * FROM ordered_product WHERE order_id IN (SELECT order_id FROM orders WHERE username = %s)", (username,))
+        orders = cursor.fetchall()
+        print("Fetched orders:", orders)
+        
+        if not orders:
+            raise HTTPException(status_code=404, detail="No orders found for this user")
+        return {"orders": orders}
+    except Exception as e:
+        print("Error fetching orders:", str(e))
+        raise HTTPException(status_code=500, detail="Failed to fetch orders")
+    finally:
+        cursor.close()
+
 
 @app.get("/")
 def health_check():

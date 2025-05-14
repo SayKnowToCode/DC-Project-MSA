@@ -1,15 +1,17 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import mysql.connector
+import os
 
 app = FastAPI()
 
 # Database connection
 db = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    password="password",
-    database="ecommerce_db"
+    host=os.environ["MYSQL_HOST"],
+    user=os.environ["MYSQL_USER"],
+    password=os.environ["MYSQL_PASSWORD"],
+    database=os.environ["MYSQL_DB"],
+    port=int(os.environ["MYSQL_PORT"]),
 )
 
 # Product model
@@ -33,11 +35,11 @@ async def validate_product(product_id: int, quantity: int):
         if not available:
             raise HTTPException(status_code=400, detail=f"Product {product_id} is out of stock.")
 
-        cursor.execute("SELECT price FROM products WHERE product_id = %s", (product_id,))
-        print(f"Product {product_id} price: {cursor.fetchone()[0]}")
-        return {"status": "success", "message": "Product available", "price": cursor.fetchone()[0]}
+        print(f"Product {product_id}")
+        return {"status": "success", "message": "Product available"}
 
     except Exception as e:
+        print(f"Error checking product availability: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Inventory check failed: {str(e)}")
 
     finally:

@@ -3,6 +3,6 @@ kind: ConfigMap
 metadata:
   name: order-config
 data:
-  DB_HOST: "mysql"
-  DB_USER: "root"
-  DB_NAME: "ecommerce_db"
+  MYSQL_HOST: host.minikube.internal
+  MYSQL_PORT: "3306"
+  MYSQL_DB: "order_db"
