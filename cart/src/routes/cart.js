@@ -9,5 +9,6 @@ const {
 router.post('/', addToCart);
 router.get('/', getCartItems);
 router.delete('/:id', removeFromCart);
+router.post('/:id', createCart);
 
 module.exports = router;

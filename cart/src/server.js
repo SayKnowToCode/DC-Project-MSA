@@ -3,7 +3,7 @@ const connectDB = require('./config/db');
 const cartRoutes = require('./routes/cart');
 
 const app = express();
-const PORT = 6000;
+const PORT = 6000; //to be changed
 
 // Middleware
 app.use(express.json());
@@ -12,7 +12,7 @@ app.use(express.json());
 connectDB();
 
 // Routes
-app.use('/api/cart', cartRoutes);
+app.use('/cart', cartRoutes);
 
 app.listen(PORT, () => {
     console.log(`Cart Service running on port ${PORT}`);
