@@ -7,11 +7,11 @@ const {
 } = require('../controllers/cartController');
 const { createCart } = require('../controllers/cartInit');
 
-router.post('/add', addToCart);
-router.get('/:username', getCartItems);
 router.delete('/remove', removeFromCart);
+router.post('/add', addToCart);
 
 
+router.get('/:username', getCartItems);
 router.post('/init', createCart);
 
 module.exports = router;
