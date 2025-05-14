@@ -4,7 +4,7 @@ metadata:
   name: cart-ingress
 spec:
   rules:
-    - host: cart-service.example.com
+    - host: dc-project.com
       http:
         paths:
           - path: /api/cart

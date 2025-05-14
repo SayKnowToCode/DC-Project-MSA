@@ -1,3 +1,4 @@
 Auth - 3000
 Products - 3001
+Cart - 6000
 Redis - 6379

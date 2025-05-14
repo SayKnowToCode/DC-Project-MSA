@@ -1,0 +1,35 @@
+response = requests.post("http://products-service:3001/rpc", json=json_rpc_payload)
+This line is very important, here write service-name:port/route-name
+
+
+--------------------------------------------------------------------------
+
+import requests
+
+class FetchRequest(BaseModel):
+    username: str
+    product_id: int
+
+@app.post("/fetch_product_rpc")
+def fetch_product_rpc(req: FetchRequest):
+    # Step 1: Check if user is logged in
+    # if not redis_client.exists(req.username):
+    #     raise HTTPException(status_code=401, detail="Please login first")
+
+    # Step 2: Make JSON-RPC call to product-service
+    # The method name should match !!!
+    json_rpc_payload = {
+        "jsonrpc": "2.0",
+        "method": "get_product", 
+        "params": [req.product_id],
+        "id": 1
+    }
+
+    try:
+        response = requests.post("http://products-service:3001/rpc", json=json_rpc_payload)
+        response_data = response.json()
+        if "error" in response_data:
+            raise HTTPException(status_code=404, detail=response_data["error"]["message"])
+        return {"product": response_data["result"]}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

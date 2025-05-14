@@ -7,7 +7,7 @@ spec:
   selector:
     matchLabels:
       app: cart
-  template: 
+  template:
     metadata:
       labels:
         app: cart
@@ -17,11 +17,11 @@ spec:
           image: joshishrihari/cart-service:latest
           ports:
             - containerPort: 6000
-          env: 
+          env:
             - name: PORT
               value: "6000"
             - name: MONGO_URI
-              value: mongodb://root:mongodbpassword@mongo:27017/cartdb?authSource=admin
+              value: mongodb+srv://Ninad:NinadDGR8@cluster0.izi96ja.mongodb.net/DC-Project?retryWrites=true&w=majority&appName=Cluster0
 ---
 apiVersion: v1
 kind: Service
@@ -33,4 +33,4 @@ spec:
   ports:
     - port: 6000
       targetPort: 6000
-  type: NodePort  
+  type: NodePort

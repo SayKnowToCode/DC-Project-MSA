@@ -1,0 +1,8 @@
+import redis
+redis_client = redis.Redis(host="redis-service", port=6379, decode_responses=True) # Redis connection
+
+if not redis_client.exists(req.username):
+    raise HTTPException(status_code=401, detail="Please login first")
+
+# Use this inside whichever route you want to enforce Authentication
+# Add redis in requirements.txt
