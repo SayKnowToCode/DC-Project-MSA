@@ -1,3 +1,3 @@
-Auth - 300
+Auth - 3000
 Products - 3001
 Redis - 6379
