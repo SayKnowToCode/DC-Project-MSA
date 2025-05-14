@@ -9,10 +9,10 @@ spec:
     - host: dc-project.com
       http:
         paths:
-          - path: /order
+          - path: /inventory
             pathType: Prefix
             backend:
               service:
                 name: inventory-service
                 port:
-                  number: 80
+                  number: 8001

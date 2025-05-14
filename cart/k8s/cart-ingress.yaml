@@ -7,7 +7,7 @@ spec:
     - host: dc-project.com
       http:
         paths:
-          - path: /api/cart
+          - path: /cart
             pathType: Prefix
             backend:
               service:

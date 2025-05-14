@@ -1,17 +1,18 @@
-CREATE DATABASE IF NOT EXISTS order_db;
-USE order_db;
+CREATE DATABASE IF NOT EXISTS orders;
 
--- Orders table
-CREATE TABLE IF NOT EXISTS orders (
-    order_id INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(50) NOT NULL
-);
+USE orders;
 
--- Ordered products table
-CREATE TABLE IF NOT EXISTS ordered_products (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    order_id INT,
-    product_id INT,
-    quantity INT,
-    FOREIGN KEY (order_id) REFERENCES orders(order_id)
-);
+CREATE TABLE
+    IF NOT EXISTS user_orders (
+        username VARCHAR(255) NOT NULL,
+        order_id INT AUTO_INCREMENT PRIMARY KEY
+    );
+
+CREATE TABLE
+    IF NOT EXISTS order_details (
+        order_id INT NOT NULL,
+        product_id INT NOT NULL,
+        quantity INT NOT NULL,
+        price INT NOT NULL,
+        FOREIGN KEY (order_id) REFERENCES user_orders (order_id)
+    );

@@ -7,6 +7,6 @@ spec:
     app: inventory-service
   ports:
     - protocol: TCP
-      port: 80
+      port: 8001
       targetPort: 8001
   type: ClusterIP

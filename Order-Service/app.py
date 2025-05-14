@@ -2,94 +2,51 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import List
 import mysql.connector
-import requests
 import os
 
 app = FastAPI()
 
-db = mysql.connector.connect(
-    host=os.environ["MYSQL_HOST"],
-    user=os.environ["MYSQL_USER"],
-    password=os.environ["MYSQL_PASSWORD"],
-    database=os.environ["MYSQL_DB"],
-    port=int(os.environ["MYSQL_PORT"]),
-)
-
-
-# Request models
-class ProductItem(BaseModel):
+class CartItem(BaseModel):
     product_id: int
     quantity: int
+    price: int
 
 class OrderRequest(BaseModel):
     username: str
-    cart: List[ProductItem]
+    cart: List[CartItem]
 
-def next_order_id(cursor):
-    cursor.execute("SELECT COALESCE(MAX(order_id), 0) + 1 FROM orders")
-    return cursor.fetchone()[0]
+def get_db_connection():
+    return mysql.connector.connect(
+        host=os.getenv("MYSQL_HOST"),
+        port=os.getenv("MYSQL_PORT"),
+        user=os.getenv("MYSQL_USER"),
+        password=os.getenv("MYSQL_PASSWORD"),
+        database=os.getenv("MYSQL_DB")
+    )
 
-@app.post("/place_order/")
-async def place_order(order_request: OrderRequest):
-    cursor = db.cursor()
-    print("Received order request:", order_request)
+@app.post("/make_order")
+def create_order(order: OrderRequest):
+    conn = get_db_connection()
+    cursor = conn.cursor()
 
     try:
-        total_amount = 0
-        validated_items = []
+        # Insert into user_orders and get the generated order_id
+        cursor.execute("INSERT INTO user_orders (username) VALUES (%s)", (order.username,))
+        order_id = cursor.lastrowid
 
-        for item in order_request.cart:
-            response = requests.get(f"http://dc-project.com/inventory/validate/{item.product_id}/{item.quantity}")
-            print("Inventory service response:", response.json())
+        # Insert each item into order_details
+        for item in order.cart:
+            cursor.execute("""
+                INSERT INTO order_details (order_id, product_id, quantity, price)
+                VALUES (%s, %s, %s, %s)
+            """, (order_id, item.product_id, item.quantity, item.price))
 
-            if response.status_code != 200:
-                print(f"Product {item.product_id} is out of stock.")
-                return {"message": f"Product {item.product_id} out of stock."}
-
-            response_data = response.json()
-            validated_items.append((item.product_id, item.quantity, response_data['price']))
-            total_amount += response_data['price'] * item.quantity
-            print(f"Product {item.product_id} validated successfully. Total amount so far: {total_amount}")
-
-        order_id = next_order_id(cursor)
-
-        cursor.execute("START TRANSACTION")
-        cursor.execute("INSERT INTO orders (username, total_amount) VALUES (%s, %s)", (order_request.username, total_amount))
-
-        for product_id, quantity, price in validated_items:
-            cursor.execute("INSERT INTO ordered_products (order_id, product_id, quantity) VALUES (%s, %s, %s)", 
-                           (order_id, product_id, quantity))
-
-        db.commit()
-        print("Order placed successfully")
+        conn.commit()
         return {"message": "Order placed successfully", "order_id": order_id}
 
     except Exception as e:
-        db.rollback()
-        print("Error during order placement:", str(e))
-        raise HTTPException(status_code=500, detail=f"Order placement failed: {str(e)}")
-
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
     finally:
         cursor.close()
-
-@app.get("/orders/{username}")
-async def get_orders(username: str):
-    cursor = db.cursor(dictionary=True)
-    try:
-        cursor.execute("SELECT * FROM ordered_product WHERE order_id IN (SELECT order_id FROM orders WHERE username = %s)", (username,))
-        orders = cursor.fetchall()
-        print("Fetched orders:", orders)
-        
-        if not orders:
-            raise HTTPException(status_code=404, detail="No orders found for this user")
-        return {"orders": orders}
-    except Exception as e:
-        print("Error fetching orders:", str(e))
-        raise HTTPException(status_code=500, detail="Failed to fetch orders")
-    finally:
-        cursor.close()
-
-
-@app.get("/")
-def health_check():
-    return {"status": "Order Service is running"}
+        conn.close()
