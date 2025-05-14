@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rabbitmq
+spec:
+  replicas: 1 # Or more for clustering
+  selector:
+    matchLabels:
+      app: rabbitmq
+  template:
+    metadata:
+      labels:
+        app: rabbitmq
+    spec:
+      containers:
+      - name: rabbitmq
+        image: rabbitmq:3-management # Or your desired RabbitMQ image with management UI
+        ports:
+        - containerPort: 5672 # AMQP port
+        - containerPort: 15672 # Management UI port
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq
+spec:
+  selector:
+    app: rabbitmq
+  ports:
+  - name: amqp
+    protocol: TCP
+    port: 5672
+    targetPort: 5672
+    nodePort: 30072
+  - name: management
+    protocol: TCP
+    port: 15672
+    targetPort: 15672
+    nodePort: 30073
+  type: NodePort
