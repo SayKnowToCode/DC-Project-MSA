@@ -34,3 +34,10 @@ spec:
                 name: order-service
                 port:
                   number: 8000
+          - path: /send(/|$)(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: nodejs-producer-service
+                port:
+                  number: 3500

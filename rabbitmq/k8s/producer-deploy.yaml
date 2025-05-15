@@ -16,7 +16,7 @@ spec:
         - name: producer
           image: joshishrihari/producer:latest # Change this to your image
           ports:
-            - containerPort: 3000
+            - containerPort: 3500
           env:
             - name: RABBITMQ_URL
               value: "amqp://rabbitmq" # Match RabbitMQ service name in the cluster
@@ -32,6 +32,6 @@ spec:
     app: nodejs-producer
   ports:
     - protocol: TCP
-      port: 80
+      port: 3500
       targetPort: 3500
   type: ClusterIP

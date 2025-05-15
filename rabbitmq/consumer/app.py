@@ -3,6 +3,8 @@ import pika
 import json
 import smtplib
 from email.mime.text import MIMEText
+import time
+import pika.exceptions
 
 def format_bill(items):
     bill = "----- ORDER BILL -----\n\n"
@@ -35,14 +37,23 @@ def callback(ch, method, properties, body):
     print("Bill emailed successfully")
 
 def main():
-    connection = pika.BlockingConnection(
-        pika.ConnectionParameters(host=os.environ.get("RABBITMQ_HOST", "rabbitmq"))
-    )
-    channel = connection.channel()
-    channel.queue_declare(queue=os.environ.get("RABBITMQ_QUEUE", "order_queue"))
-    channel.basic_consume(queue='order_queue', on_message_callback=callback, auto_ack=True)
-    print('Waiting for messages...')
-    channel.start_consuming()
+    while True:
+        try:
+            connection = pika.BlockingConnection(
+                pika.ConnectionParameters(host=os.environ.get("RABBITMQ_HOST", "rabbitmq"))
+            )
+            channel = connection.channel()
+            channel.queue_declare(queue=os.environ.get("RABBITMQ_QUEUE", "order_queue"), durable=True)
+            channel.basic_consume(queue='order_queue', on_message_callback=callback, auto_ack=True)
+            print('Waiting for messages...')
+            channel.start_consuming()
+        except pika.exceptions.AMQPConnectionError as e:
+            print("RabbitMQ not ready, retrying in 5 seconds...")
+            time.sleep(5)
+        except Exception as e:
+            print("Unexpected error:", e)
+            time.sleep(5)
+
 
 if __name__ == "__main__":
     main()
