@@ -1,0 +1,1 @@
+Inside k8s folder use 'kubectl apply -f ./ --recursive' to run all yaml files, even those in subfolders
