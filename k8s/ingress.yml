@@ -27,13 +27,6 @@ spec:
                 name: products-service
                 port:
                   number: 3001
-          - path: /order(/|$)(.*)
-            pathType: Prefix
-            backend:
-              service:
-                name: order-service
-                port:
-                  number: 8000
           - path: /send(/|$)(.*)
             pathType: Prefix
             backend:
@@ -41,7 +34,7 @@ spec:
                 name: nodejs-producer-service
                 port:
                   number: 3500
-          - path: /cart
+          - path: /cart(/|$)(.*)
             pathType: Prefix
             backend:
               service:
