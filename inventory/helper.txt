@@ -1,0 +1,9 @@
+To run sql file (this is not preferable as pod crashed, sql content will be lost)
+-->kubectl exec -i mysql-deployment-69cc4cdcd7-46jx2 -- mysql -u god -p < ./k8s/init.sql
+
+OR
+
+-->kubectl cp ./k8s/init.sql mysql-deployment-69cc4cdcd7-46jx2:/tmp/init.sql 
+
+-->kubectl exec -it mysql-deployment-69cc4cdcd7-46jx2 -- sh
+sh-5.1# mysql -u god -p < /tmp/init.sql
