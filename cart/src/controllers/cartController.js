@@ -3,13 +3,14 @@ const CartItem = require('../models/CartItem');
 // Add an item to a specific user's cart
 exports.addToCart = async (req, res) => {
     try {
-        const { username, item } = req.body;
+        const { item } = req.body;
 
-        if (!username || !item) {
+        const username = req.user.username;
+        if (!item) {
             return res.status(400).json({ error: 'Username and item are required' });
         }
+        console.log(username)
         const userCart = await CartItem.findOne({ name: username });
-
         if (!userCart) {
             return res.status(404).json({ error: 'Cart not found for this user' });
         }
@@ -23,10 +24,10 @@ exports.addToCart = async (req, res) => {
     }
 };
 
-// Get all items in a specific user's cart
+// Get all items in a specific user's cart  
 exports.getCartItems = async (req, res) => {
     try {
-        const { username } = req.params;
+        const { username } = req.user.username;
 
         const userCart = await CartItem.findOne({ name: username });
 
@@ -43,7 +44,8 @@ exports.getCartItems = async (req, res) => {
 // Remove an item from a user's cart by product_id
 exports.removeFromCart = async (req, res) => {
     try {
-        const { username, product_id } = req.body;
+        const { product_id } = req.body;
+        const { username } = req.user.username;
         const userCart = await CartItem.findOne({ name: username });
 
         if (!userCart) {

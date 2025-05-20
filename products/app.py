@@ -1,11 +1,13 @@
-from fastapi import FastAPI, HTTPException, Request
+# main.py
+from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel
 import os
 import mysql.connector
-import redis
+from jwt_auth import verify_jwt_token
+# import redis
 
-# Redis connection
-redis_client = redis.Redis(host="redis-service", port=6379, decode_responses=True)
+# Redis connection (optional, currently commented out)
+# redis_client = redis.Redis(host="redis-service", port=6379, decode_responses=True)
 
 app = FastAPI()
 
@@ -20,7 +22,6 @@ conn = mysql.connector.connect(
 cursor = conn.cursor(dictionary=True)
 
 class BuyRequest(BaseModel):
-    username: str
     product_id: int
 
 @app.get("/getAll")
@@ -37,7 +38,8 @@ def get_one(product_id: int):
     return result
 
 @app.post("/buy")
-def buy(req: BuyRequest):
-    if not redis_client.exists(req.username):
-        raise HTTPException(status_code=401, detail="Please login first")
-    return {"message": f"User {req.username} bought product {req.product_id}"}
+def buy(req: BuyRequest, username: str = Depends(verify_jwt_token)):
+    # if not redis_client.exists(username):
+    #     raise HTTPException(status_code=401, detail="Please login first")
+    print(username)
+    return {"message": f"User {username} bought product {req.product_id}"}

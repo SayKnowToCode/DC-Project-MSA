@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const amqp = require('amqplib');
+const verifyJWT = require('./verifyJWT');
 
 const app = express();
 const PORT = 3500;
@@ -16,14 +17,16 @@ mongoose.connect(MONGO_URI, {
 }).then(() => console.log("MongoDB connected"))
     .catch(err => console.error("MongoDB connection error:", err));
 
-app.get('/send/:username', async (req, res) => {
-    const { username } = req.params;
+app.get('/send', verifyJWT,  async (req, res) => {
+    const username  = req.user.username;
 
     try {
         // Get direct access to collection without schema
+        console.log(req.user)
+        console.log("Username:", username);
         const collection = mongoose.connection.db.collection('cartitems');
         const userCart = await collection.findOne({ name: username });
-
+        console.log("User Cart:", userCart);
         if (!userCart || !userCart.cart) {
             return res.status(404).json({ error: 'Cart not found for this user' });
         }
