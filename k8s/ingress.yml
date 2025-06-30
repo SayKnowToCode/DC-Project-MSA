@@ -41,10 +41,3 @@ spec:
                 name: cart-service
                 port:
                   number: 6000
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: rabbitmq
-                port:
-                  number: 15672
